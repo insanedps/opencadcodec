@@ -21343,8 +21343,8 @@ impl<'a> SectionReader<'a> {
                     }
                 }
                 91 => {
-                    if let Some(v) = pair.as_i32() {
-                        style.line_color = Color::from_index(v as i16);
+                    if let Some(v) = pair.as_i32_bits() {
+                        style.line_color = color_from_i32(v);
                     }
                 }
                 92 => {
@@ -21383,8 +21383,8 @@ impl<'a> SectionReader<'a> {
                     }
                 }
                 93 => {
-                    if let Some(v) = pair.as_i32() {
-                        style.text_color = Color::from_index(v as i16);
+                    if let Some(v) = pair.as_i32_bits() {
+                        style.text_color = color_from_i32(v);
                     }
                 }
                 292 => {
@@ -21441,6 +21441,74 @@ impl<'a> SectionReader<'a> {
                 296 => {
                     if let Some(v) = pair.as_bool() {
                         style.is_annotative = v;
+                    }
+                }
+                94 => {
+                    if let Some(v) = pair.as_i32_bits() {
+                        style.block_content_color = color_from_i32(v);
+                    }
+                }
+                171 => {
+                    if let Some(v) = pair.as_i16() {
+                        style.multileader_draw_order =
+                            crate::objects::MultiLeaderDrawOrderType::from(v);
+                    }
+                }
+                172 => {
+                    if let Some(v) = pair.as_i16() {
+                        style.leader_draw_order = crate::objects::LeaderDrawOrderType::from(v);
+                    }
+                }
+                177 => {
+                    if let Some(v) = pair.as_i16() {
+                        style.block_content_connection =
+                            crate::objects::BlockContentConnectionType::from(v);
+                    }
+                }
+                271 => {
+                    if let Some(v) = pair.as_i16() {
+                        style.text_attachment_direction =
+                            crate::objects::TextAttachmentDirectionType::from(v);
+                    }
+                }
+                272 => {
+                    if let Some(v) = pair.as_i16() {
+                        style.text_bottom_attachment = crate::objects::TextAttachmentType::from(v);
+                    }
+                }
+                273 => {
+                    if let Some(v) = pair.as_i16() {
+                        style.text_top_attachment = crate::objects::TextAttachmentType::from(v);
+                    }
+                }
+                90 => {
+                    if let Some(v) = pair.as_i32() {
+                        style.max_leader_points = v;
+                    }
+                }
+                40 | 41 | 46 | 47 | 49 | 140 | 141 | 143 => {
+                    if let Some(v) = pair.as_double() {
+                        match pair.code {
+                            40 => style.first_segment_angle = v,
+                            41 => style.second_segment_angle = v,
+                            46 => style.align_space = v,
+                            47 => style.block_content_scale_x = v,
+                            49 => style.block_content_scale_y = v,
+                            140 => style.block_content_scale_z = v,
+                            141 => style.block_content_rotation = v,
+                            _ => style.break_gap_size = v,
+                        }
+                    }
+                }
+                293 | 294 | 295 | 297 | 298 => {
+                    if let Some(v) = pair.as_bool() {
+                        match pair.code {
+                            293 => style.enable_block_scale = v,
+                            294 => style.enable_block_rotation = v,
+                            295 => style.property_changed = v,
+                            297 => style.text_always_left = v,
+                            _ => style.unknown_flag_298 = v,
+                        }
                     }
                 }
                 _ => {}
