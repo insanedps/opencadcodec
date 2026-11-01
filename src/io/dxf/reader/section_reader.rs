@@ -7345,6 +7345,8 @@ impl<'a> SectionReader<'a> {
             _ => Handle::NULL,
         };
 
+        name_mleader_styles_from_dictionary(document);
+
         Ok(())
     }
 
@@ -21330,8 +21332,13 @@ impl<'a> SectionReader<'a> {
                         style.owner_handle = Handle::new(h);
                     }
                 }
-                3 => style.name = pair.value_string.clone(),
-                300 => style.description = pair.value_string.clone(),
+                // 3 is the description (the name is the dictionary key; the
+                // name is kept too for callers that look styles up by it).
+                3 => {
+                    style.description = pair.value_string.clone();
+                    style.name = pair.value_string.clone();
+                }
+                300 => style.default_text = pair.value_string.clone(),
                 170 => {
                     if let Some(v) = pair.as_i16() {
                         style.content_type = crate::objects::LeaderContentType::from(v);
@@ -21417,6 +21424,7 @@ impl<'a> SectionReader<'a> {
                         style.scale_factor = v;
                     }
                 }
+                // Not an MLEADERSTYLE group; kept for files that used it.
                 304 => style.default_text = pair.value_string.clone(),
                 340 => {
                     if let Ok(h) = u64::from_str_radix(&pair.value_string, 16) {
@@ -22038,6 +22046,35 @@ impl<'a> SectionReader<'a> {
         }
 
         Ok(Some(dv))
+    }
+}
+
+/// An MLEADERSTYLE's name is its key in the ACAD_MLEADERSTYLE dictionary;
+/// group 3 is only its description (AutoCAD's "Annotative" style has
+/// `3 Standard`). Name every style the dictionary lists; the others keep the
+/// name taken from group 3.
+fn name_mleader_styles_from_dictionary(document: &mut CadDocument) {
+    let Some(ObjectType::Dictionary(root)) = document
+        .objects
+        .get(&document.header.named_objects_dict_handle)
+    else {
+        return;
+    };
+    let Some(dictionary) = root.get("ACAD_MLEADERSTYLE") else {
+        return;
+    };
+    let Some(ObjectType::Dictionary(styles)) = document.objects.get(&dictionary) else {
+        return;
+    };
+    let names: Vec<(Handle, String)> = styles
+        .entries
+        .iter()
+        .map(|(name, handle)| (*handle, name.clone()))
+        .collect();
+    for (handle, name) in names {
+        if let Some(ObjectType::MultiLeaderStyle(style)) = document.objects.get_mut(&handle) {
+            style.name = name;
+        }
     }
 }
 

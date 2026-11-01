@@ -8231,8 +8231,10 @@ impl<'a, W: DxfStreamWriter> SectionWriter<'a, W> {
         // Dogleg length
         self.writer.write_double(43, style.landing_distance)?;
 
-        // Style name
-        self.writer.write_string(3, &style.name)?;
+        // Description (group 3). The name is the style's dictionary key and is
+        // not written here: writing it as the description would turn it into
+        // one on the next read.
+        self.writer.write_string(3, &style.description)?;
 
         // Arrow head block handle
         if let Some(h) = style.arrowhead_handle {
