@@ -6698,6 +6698,7 @@ impl DwgDocumentBuilder {
                                         text_data_bits,
                                     ),
                                 object_ids,
+                                dxf_data: Vec::new(),
                             },
                         )
                     };
