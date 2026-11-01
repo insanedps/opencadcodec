@@ -8489,7 +8489,8 @@ impl<'a, W: DxfStreamWriter> SectionWriter<'a, W> {
                 insertion,
                 scale_factor,
             } => {
-                self.writer.write_subclass("AcDbBlkRefObjectContextData")?;
+                // No AcDbBlkRefObjectContextData marker: ACAD refuses it
+                // ("Missing DXF group code: 1"), as for TEXT.
                 self.writer.write_double(50, *rotation)?;
                 self.writer.write_double(10, insertion.x)?;
                 self.writer.write_double(20, insertion.y)?;
@@ -8504,7 +8505,10 @@ impl<'a, W: DxfStreamWriter> SectionWriter<'a, W> {
                 insertion,
                 alignment,
             } => {
-                self.writer.write_subclass("AcDbTextObjectContextData")?;
+                // ACAD writes these straight after the
+                // AcDbAnnotScaleObjectContextData groups, without an
+                // AcDbTextObjectContextData marker, and refuses the file with
+                // one ("Missing DXF group code: 1").
                 self.writer.write_i16(70, *horizontal_mode)?;
                 self.writer.write_double(50, *rotation)?;
                 self.writer.write_double(10, insertion.x)?;
@@ -8643,7 +8647,8 @@ impl<'a, W: DxfStreamWriter> SectionWriter<'a, W> {
                 }
             }
             ObjectContextKind::Leader(value) => {
-                self.writer.write_subclass("AcDbLeaderObjectContextData")?;
+                // No AcDbLeaderObjectContextData marker: ACAD refuses it
+                // ("Missing DXF group code: 1"), as for TEXT.
                 self.writer.write_i32(70, value.points.len() as i32)?;
                 for point in &value.points {
                     self.writer.write_point3d(10, *point)?;
